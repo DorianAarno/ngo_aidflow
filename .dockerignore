@@ -1,0 +1,12 @@
+# Never send these into the Docker build context
+**/__pycache__/
+**/*.py[cod]
+**/.env
+**/.venv/
+**/venv/
+**/*.log
+.git/
+.gitignore
+README.md
+complaints.json
+mongo_data/

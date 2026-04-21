@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AidFlow — Community Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root {
+  --sand: #FDF6ED;
+  --cream: #FFF9F2;
+  --amber: #F2A726;
+  --amber-light: #FDE9BB;
+  --amber-dark: #C47F0D;
+  --green: #2D6A4F;
+  --green-light: #D8EFDF;
+  --green-mid: #52B788;
+  --terracotta: #D4572A;
+  --terracotta-light: #FAE3DA;
+  --blue: #2563A8;
+  --blue-light: #DCEEFF;
+  --purple: #6B3FA0;
+  --purple-light: #EDE5F8;
+  --text: #1C1A17;
+  --text-muted: #6B6459;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.14);
+  --sidebar-w: 240px;
+  --radius: 14px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden}
+
+/* SIDEBAR */
+#sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);background:#fff;
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .28s ease;
+  overflow-y:auto;
+}
+.sidebar-logo{
+  padding:20px 20px 16px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:var(--green);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:20px;height:20px}
+.logo-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--green)}
+.logo-tag{font-size:10px;color:var(--text-muted);margin-top:-2px;letter-spacing:.04em}
+
+.sidebar-city{padding:10px 14px;display:flex;align-items:center;gap:8px;
+  background:var(--green-light);margin:14px 12px;border-radius:10px;}
+.sidebar-city .city-dot{width:8px;height:8px;border-radius:50%;background:var(--green-mid);flex-shrink:0}
+#city-select{
+  font-size:13px;font-weight:600;color:var(--green);background:transparent;
+  border:none;outline:none;cursor:pointer;font-family:'Nunito',sans-serif;flex:1;
+}
+#city-select option{color:var(--text);background:#fff;font-weight:600}
+
+.nav-section{padding:6px 12px 4px;font-size:10px;font-weight:700;color:var(--text-muted);
+  letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 16px;margin:2px 8px;
+  border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text-muted);
+  transition:background .15s,color .15s;text-decoration:none;user-select:none;
+}
+.nav-item:hover{background:var(--sand);color:var(--text)}
+.nav-item.active{background:var(--green-light);color:var(--green)}
+.nav-item .nav-icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--terracotta);color:#fff;font-size:10px;
+  font-weight:700;padding:2px 7px;border-radius:20px}
+
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.whatsapp-btn{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;
+  background:#25D366;color:#fff;font-size:13px;font-weight:700;cursor:pointer;
+  transition:filter .15s;text-decoration:none;
+}
+.whatsapp-btn:hover{filter:brightness(1.08)}
+.whatsapp-btn svg{width:20px;height:20px;flex-shrink:0}
+
+/* MAIN */
+#main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+.topbar{
+  background:#fff;border-bottom:1px solid var(--border);padding:0 28px;
+  height:62px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50;
+}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px}
+.topbar-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text)}
+.topbar-subtitle{font-size:13px;color:var(--text-muted);margin-left:2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.notif-btn{
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--border-strong);
+  background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;
+  border-radius:50%;background:var(--terracotta);border:1.5px solid #fff}
+.avatar{width:36px;height:36px;border-radius:10px;background:var(--amber);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  font-weight:700;color:#fff;cursor:pointer}
+
+/* CONTENT */
+.content{padding:28px;display:flex;flex-direction:column;gap:26px}
+
+/* PAGE ANIMATION */
+.page-view{animation:fadeIn .3s ease-in-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat-card{
+  background:#fff;border-radius:var(--radius);border:1px solid var(--border);
+  padding:20px;display:flex;align-items:flex-start;gap:14px;
+}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;}
+.stat-icon.amber{background:var(--amber-light)}
+.stat-icon.green{background:var(--green-light)}
+.stat-icon.blue{background:var(--blue-light)}
+.stat-icon svg{width:24px;height:24px}
+.stat-label{font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:.03em}
+.stat-num{font-size:32px;font-weight:800;line-height:1.1;margin-top:2px}
+.stat-num.amber{color:var(--amber-dark)}
+.stat-num.green{color:var(--green)}
+.stat-num.blue{color:var(--blue)}
+.stat-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+
+/* MAP + PROBLEMS GRID */
+.mid-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:16px}
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;isolation:isolate}
+.card-header{padding:16px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:700;color:var(--text)}
+.card-action{font-size:12px;color:var(--green);font-weight:700;cursor:pointer;background:none;border:none;font-family:'Nunito',sans-serif}
+
+#map{height:280px;width:100%}
+.map-legend{display:flex;gap:14px;padding:12px 18px;border-top:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);font-weight:600}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* PROBLEMS LIST */
+.problems-list{padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto}
+.problem-card{
+  border:1px solid var(--border);border-radius:11px;padding:12px 14px;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;
+}
+.problem-card:hover{border-color:var(--green-mid);box-shadow:0 2px 8px rgba(45,106,79,.1)}
+.prob-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px}
+.prob-emoji{font-size:22px;line-height:1}
+.prob-info{flex:1;min-width:0}
+.prob-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prob-loc{font-size:11px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prob-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.status-pending{background:var(--amber-light);color:var(--amber-dark)}
+.status-ongoing{background:var(--green-light);color:var(--green)}
+.status-completed{background:var(--blue-light);color:var(--blue)}
+.prob-bottom{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.prob-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;
+  background:var(--sand);color:var(--text-muted);border:1px solid var(--border)}
+.prob-map-btn{
+  margin-left:auto;font-size:11px;font-weight:700;color:var(--green);
+  background:none;border:1px solid var(--green-mid);border-radius:7px;
+  padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:4px;
+  transition:background .12s;font-family:'Nunito',sans-serif;
+}
+.prob-map-btn:hover{background:var(--green-light)}
+.loading-text{font-size:13px;color:var(--text-muted);padding:20px;text-align:center}
+
+/* SUBMIT SECTION */
+.submit-section{
+  background:linear-gradient(135deg,var(--terracotta-light),var(--amber-light));
+  border-radius:var(--radius);padding:24px;display:flex;
+  align-items:center;gap:20px;border:1px solid rgba(212,87,42,.12);
+}
+.submit-text{flex:1}
+.submit-heading{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--text)}
+.submit-sub{font-size:13px;color:var(--text-muted);margin-top:4px}
+.submit-btn{
+  padding:12px 24px;background:var(--terracotta);color:#fff;border:none;border-radius:11px;
+  font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;
+  white-space:nowrap;transition:filter .15s;
+}
+.submit-btn:hover{filter:brightness(1.1)}
+
+/* FORUM */
+.forum-section{background:#fff;border-radius:var(--radius);border:1px solid var(--border)}
+.forum-header{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.forum-list{padding:12px 16px;display:flex;flex-direction:column;gap:0}
+.forum-item{
+  display:flex;align-items:flex-start;gap:12px;padding:14px 4px;
+  border-bottom:1px solid var(--border);
+}
+.forum-item:last-child{border-bottom:none}
+.forum-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;
+}
+.forum-body{flex:1;min-width:0}
+.forum-name{font-size:13px;font-weight:700;color:var(--text)}
+.forum-msg{font-size:12px;color:var(--text-muted);margin-top:2px;line-height:1.5}
+.forum-time{font-size:10px;color:var(--text-muted);margin-top:4px}
+.forum-react{display:flex;gap:6px;margin-top:6px}
+.react-btn{
+  font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--border-strong);
+  background:none;cursor:pointer;color:var(--text-muted);font-weight:600;
+  font-family:'Nunito',sans-serif;transition:background .12s;
+}
+.react-btn:hover,.react-btn.liked{background:var(--green-light);color:var(--green);border-color:var(--green-mid)}
+.forum-compose{
+  padding:14px 20px 18px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.forum-input{
+  flex:1;padding:10px 14px;border:1px solid var(--border-strong);border-radius:10px;
+  font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none;
+  background:var(--sand);
+}
+.forum-input:focus{border-color:var(--green-mid)}
+.forum-send{
+  padding:10px 16px;background:var(--green);color:#fff;border:none;border-radius:10px;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;
+  transition:filter .15s;
+}
+.forum-send:hover{filter:brightness(1.1)}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;
+  align-items:center;justify-content:center;padding:16px;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:#fff;border-radius:18px;padding:28px;width:460px;max-width:100%;
+  max-height:90vh;overflow-y:auto;position:relative;
+}
+.modal-close{
+  position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;
+  border:none;background:var(--sand);cursor:pointer;font-size:16px;color:var(--text-muted);
+  display:flex;align-items:center;justify-content:center;
+}
+.modal-title{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:700;color:var(--text-muted);letter-spacing:.04em;
+  display:block;margin-bottom:5px;text-transform:uppercase}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:10px 13px;border:1px solid var(--border-strong);border-radius:9px;
+  font-size:14px;font-family:'Nunito',sans-serif;color:var(--text);outline:none;
+  background:#fff;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--green)}
+.form-input.error,.form-select.error,.form-textarea.error{border-color:var(--terracotta)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6459' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.form-textarea{resize:vertical;min-height:80px}
+.form-error{font-size:11px;color:var(--terracotta);margin-top:4px;font-weight:600}
+.form-submit{
+  width:100%;padding:12px;background:var(--green);color:#fff;border:none;
+  border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Nunito',sans-serif;margin-top:6px;transition:filter .15s;
+}
+.form-submit:hover{filter:brightness(1.08)}
+.form-submit:disabled{opacity:.6;cursor:not-allowed}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.loc-btn{
+  margin-top:6px;padding:7px 12px;font-size:12px;font-weight:700;color:var(--blue);
+  background:var(--blue-light);border:none;border-radius:8px;cursor:pointer;
+  font-family:'Nunito',sans-serif;transition:filter .15s;
+}
+.loc-btn:hover{filter:brightness(.95)}
+.success-banner{
+  background:var(--green-light);border:1px solid var(--green-mid);border-radius:12px;
+  padding:20px;text-align:center;display:none;
+}
+.success-banner h3{color:var(--green);font-size:16px;margin-bottom:6px}
+.success-banner p{font-size:13px;color:var(--text-muted)}
+
+/* MAP DETAIL MODAL */
+#map-modal .modal{width:520px}
+#map-modal-map{height:280px;border-radius:10px;margin:12px 0;overflow:hidden}
+.problem-info-box{
+  background:var(--sand);border-radius:10px;padding:14px 16px;margin-top:4px;
+}
+.pib-title{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.pib-row{display:flex;gap:8px;margin-bottom:5px;align-items:flex-start}
+.pib-key{font-size:12px;font-weight:700;color:var(--text-muted);width:80px;flex-shrink:0}
+.pib-val{font-size:12px;color:var(--text);flex:1}
+.pib-img{width:100%;border-radius:8px;margin-top:10px;max-height:160px;object-fit:cover}
+.pib-actions{display:flex;gap:8px;margin-top:14px}
+.pib-btn{
+  flex:1;padding:9px 0;border-radius:9px;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;font-family:'Nunito',sans-serif;transition:filter .15s;
+}
+.pib-btn:hover{filter:brightness(1.08)}
+
+/* VIEWS: Volunteer / NGO / Problems */
+.view-header{margin-bottom:4px}
+.view-header h2{font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:var(--text)}
+.view-header p{font-size:13px;color:var(--text-muted);margin-top:4px}
+
+.form-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:32px;max-width:560px}
+
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.filter-select{padding:8px 12px;border:1px solid var(--border-strong);border-radius:9px;
+  font-size:13px;font-family:'Nunito',sans-serif;color:var(--text);outline:none;background:#fff;
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6459' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
+}
+.filter-select:focus{border-color:var(--green)}
+.problems-grid{display:flex;flex-direction:column;gap:10px}
+.all-problem-card{
+  background:#fff;border-radius:11px;border:1px solid var(--border);padding:16px 18px;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  display:flex;gap:14px;align-items:flex-start;
+}
+.all-problem-card:hover{border-color:var(--green-mid);box-shadow:var(--shadow)}
+.apc-emoji{font-size:28px;line-height:1;flex-shrink:0}
+.apc-body{flex:1;min-width:0}
+.apc-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.apc-loc{font-size:12px;color:var(--text-muted);margin-bottom:6px}
+.apc-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.apc-status{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+.apc-date{font-size:11px;color:var(--text-muted)}
+.apc-votes{font-size:11px;color:var(--text-muted)}
+.pagination{display:flex;gap:8px;align-items:center;margin-top:16px}
+.page-btn{
+  padding:8px 16px;border-radius:9px;border:1px solid var(--border-strong);
+  background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--text);
+  font-family:'Nunito',sans-serif;transition:background .12s;
+}
+.page-btn:hover:not(:disabled){background:var(--green-light);color:var(--green);border-color:var(--green-mid)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-info{font-size:13px;color:var(--text-muted);flex:1;text-align:center}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .mid-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .stats-row{grid-template-columns:1fr}
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #main{margin-left:0}
+  .hamburger{display:block}
+  .content{padding:16px}
+  .submit-section{flex-direction:column;text-align:center}
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;
+  padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;
+  z-index:500;opacity:0;transform:translateY(8px);
+  transition:opacity .25s,transform .25s;pointer-events:none;max-width:300px;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:var(--terracotta)}
+
+/* OVERLAY for sidebar on mobile */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99}
+.sidebar-overlay.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7z" fill="#fff"/>
+        <circle cx="10" cy="9" r="2.5" fill="#2D6A4F"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">AidFlow</div>
+      <div class="logo-tag">Community Aid Platform</div>
+    </div>
+  </div>
+
+  <div class="sidebar-city">
+    <div class="city-dot"></div>
+    <select id="city-select" onchange="setCity(this.value)">
+      <option value="Bhopal">📍 Bhopal</option>
+    </select>
+  </div>
+
+  <div class="nav-section">Main</div>
+  <a class="nav-item active" id="nav-dashboard" onclick="navigateTo('dashboard-view', this)">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="currentColor"><rect x="1" y="1" width="7" height="7" rx="2"/><rect x="10" y="1" width="7" height="7" rx="2"/><rect x="1" y="10" width="7" height="7" rx="2"/><rect x="10" y="10" width="7" height="7" rx="2"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item" onclick="openModal('problem-modal')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="9" r="7"/><line x1="9" y1="5" x2="9" y2="9"/><circle cx="9" cy="12" r=".8" fill="currentColor"/></svg>
+    Submit Problem
+    <span class="nav-badge">!</span>
+  </a>
+  <a class="nav-item" id="nav-problems" onclick="navigateTo('problems-view', this)">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h12M3 9h8M3 14h5"/></svg>
+    All Problems
+  </a>
+  <a class="nav-item" id="nav-volunteer" onclick="navigateTo('volunteer-view', this)">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="6" r="3"/><path d="M3 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+    Volunteer Register
+  </a>
+  <a class="nav-item" id="nav-ngo" onclick="navigateTo('ngo-view', this)">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="8" width="14" height="9" rx="1.5"/><path d="M5 8V6a4 4 0 018 0v2"/></svg>
+    NGO Register
+  </a>
+
+  <div class="nav-section">Community</div>
+  <a class="nav-item" onclick="showToast('Projects page coming soon!')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="14" height="12" rx="2"/><path d="M6 7h6M6 11h4"/></svg>
+    All Projects
+  </a>
+  <a class="nav-item" onclick="showToast('Login coming soon!')">
+    <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="12" height="12" rx="2"/><path d="M6 9h6M9 6l3 3-3 3"/></svg>
+    Login / Sign Up
+  </a>
+
+  <div class="sidebar-footer">
+    <a class="whatsapp-btn" href="https://wa.me/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.13.558 4.13 1.533 5.867L.057 23.5a.5.5 0 00.6.6l5.633-1.476A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.02-1.374l-.36-.214-3.736.979.997-3.635-.235-.374A9.818 9.818 0 1112 21.818z"/></svg>
+      Join WhatsApp Community
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="11" x2="19" y2="11"/><line x1="3" y1="16" x2="19" y2="16"/></svg>
+    </button>
+    <div>
+      <div class="topbar-title" id="topbar-greeting">Good morning, Aidworker 👋</div>
+      <div class="topbar-subtitle" id="topbar-date">Loading…</div>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn" onclick="showToast('No new notifications')">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 2a5 5 0 015 5v2l1.5 3H2.5L4 9V7a5 5 0 015-5z"/><path d="M7 14a2 2 0 004 0"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+      <div class="avatar">AF</div>
+    </div>
+  </div>
+
+  <div id="views-container">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="page-view">
+      <div class="content">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#C47F0D" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".8" fill="#C47F0D"/></svg>
+            </div>
+            <div>
+              <div class="stat-label">Total Problems</div>
+              <div class="stat-num amber" id="stat-problems">—</div>
+              <div class="stat-sub" id="stat-problems-sub">in selected city</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div>
+              <div class="stat-label">Ongoing Projects</div>
+              <div class="stat-num green" id="stat-ongoing">—</div>
+              <div class="stat-sub">active NGO projects</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563A8" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <div>
+              <div class="stat-label">Completed Projects</div>
+              <div class="stat-num blue" id="stat-completed">—</div>
+              <div class="stat-sub">resolved community issues</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="40" cy="60" rx="22" ry="6" fill="rgba(0,0,0,0.06)"/>
+            <rect x="28" y="30" width="24" height="28" rx="6" fill="#F2A726"/>
+            <circle cx="40" cy="24" r="12" fill="#FDDCA0"/>
+            <circle cx="36" cy="22" r="2.5" fill="#1C1A17"/>
+            <circle cx="44" cy="22" r="2.5" fill="#1C1A17"/>
+            <path d="M36 27 Q40 31 44 27" stroke="#C47F0D" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M52 34 L60 28 L60 44 L52 40 Z" fill="#D4572A"/>
+            <path d="M28 38 Q20 36 18 40" stroke="#F2A726" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <rect x="33" y="56" width="6" height="12" rx="3" fill="#2D6A4F"/>
+            <rect x="41" y="56" width="6" height="12" rx="3" fill="#2D6A4F"/>
+          </svg>
+          <div class="submit-text">
+            <div class="submit-heading">Spot a problem in your area?</div>
+            <div class="submit-sub">Report issues like garbage, broken roads, or safety hazards — and connect with NGOs ready to act.</div>
+          </div>
+          <button class="submit-btn" onclick="openModal('problem-modal')">+ Submit a Problem</button>
+        </div>
+
+        <div class="mid-grid">
+          <div class="card">
+            <div class="card-header" style="padding-bottom:12px">
+              <div class="card-title" id="map-card-title">📍 Active Locations</div>
+              <button class="card-action" onclick="navigateTo('problems-view', document.getElementById('nav-problems'))">View all →</button>
+            </div>
+            <div id="map"></div>
+            <div class="map-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#D4572A"></div>Pending</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2D6A4F"></div>Ongoing</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2563A8"></div>Completed</div>
+            </div>
+          </div>
+
+          <div class="card" style="display:flex;flex-direction:column">
+            <div class="card-header">
+              <div class="card-title">Recent Problems</div>
+              <button class="card-action" onclick="navigateTo('problems-view', document.getElementById('nav-problems'))">View all →</button>
+            </div>
+            <div class="problems-list" id="problems-list">
+              <div class="loading-text">Loading problems…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="forum-section">
+          <div class="forum-header">
+            <div class="card-title">💬 Community Forum</div>
+            <span style="font-size:12px;color:var(--text-muted)" id="forum-city-label"></span>
+          </div>
+          <div class="forum-list" id="forum-list">
+            <div class="loading-text">Loading forum…</div>
+          </div>
+          <div class="forum-compose">
+            <div class="avatar" style="width:32px;height:32px;border-radius:50%;font-size:12px;flex-shrink:0">AF</div>
+            <input class="forum-input" id="forum-input" type="text" placeholder="Share a thought, update, or concern…" maxlength="500"/>
+            <button class="forum-send" onclick="postForumMessage()">Post</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOLUNTEER VIEW -->
+    <div id="volunteer-view" class="page-view" style="display:none">
+      <div class="content">
+        <div class="view-header">
+          <h2>Volunteer Registration</h2>
+          <p>Sign up to help NGOs tackle civic problems in your city.</p>
+        </div>
+        <div class="form-card">
+          <div id="volunteer-success" class="success-banner">
+            <h3>You're registered! 🎉</h3>
+            <p>Thank you for signing up. An NGO coordinator will reach out to you soon.</p>
+          </div>
+          <form id="volunteer-form" onsubmit="handleVolunteerSubmit(event)" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input class="form-input" type="text" id="vol-name" placeholder="Your full name" required/>
+                <div class="form-error" id="vol-name-err"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email *</label>
+                <input class="form-input" type="email" id="vol-email" placeholder="you@example.com" required/>
+                <div class="form-error" id="vol-email-err"></div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Phone *</label>
+                <input class="form-input" type="tel" id="vol-phone" placeholder="+91 9876543210" required/>
+                <div class="form-error" id="vol-phone-err"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">City *</label>
+                <input class="form-input" type="text" id="vol-city" placeholder="e.g. Bhopal" required/>
+                <div class="form-error" id="vol-city-err"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Skills (comma-separated)</label>
+              <input class="form-input" type="text" id="vol-skills" placeholder="e.g. Cleanups, Social Media, Teaching"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Availability *</label>
+              <select class="form-select" id="vol-availability" required>
+                <option value="">Select availability…</option>
+                <option value="Weekends">Weekends</option>
+                <option value="Weekdays">Weekdays</option>
+                <option value="Anytime">Anytime</option>
+              </select>
+              <div class="form-error" id="vol-avail-err"></div>
+            </div>
+            <button class="form-submit" type="submit" id="vol-submit-btn">Complete Registration</button>
+          </form>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);cursor:pointer" onclick="navigateTo('dashboard-view', document.getElementById('nav-dashboard'))">← Return to Dashboard</p>
+      </div>
+    </div>
+
+    <!-- NGO VIEW -->
+    <div id="ngo-view" class="page-view" style="display:none">
+      <div class="content">
+        <div class="view-header">
+          <h2>NGO Portal</h2>
+          <p>Register your organization to manage community projects and connect with volunteers.</p>
+        </div>
+        <div class="form-card">
+          <div id="ngo-success" class="success-banner">
+            <h3>Application Submitted! 🏢</h3>
+            <p>Your NGO registration is under review. We'll contact you at the provided email within 2–3 business days.</p>
+          </div>
+          <form id="ngo-form" onsubmit="handleNGOSubmit(event)" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">NGO Name *</label>
+                <input class="form-input" type="text" id="ngo-name" placeholder="Organization name" required/>
+                <div class="form-error" id="ngo-name-err"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Registration No. *</label>
+                <input class="form-input" type="text" id="ngo-reg" placeholder="e.g. NGO/2024/001" required/>
+                <div class="form-error" id="ngo-reg-err"></div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Email *</label>
+                <input class="form-input" type="email" id="ngo-email" placeholder="ngo@example.org" required/>
+                <div class="form-error" id="ngo-email-err"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone *</label>
+                <input class="form-input" type="tel" id="ngo-phone" placeholder="+91 9876543210" required/>
+                <div class="form-error" id="ngo-phone-err"></div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">City *</label>
+                <input class="form-input" type="text" id="ngo-city" placeholder="e.g. Bhopal" required/>
+                <div class="form-error" id="ngo-city-err"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Website</label>
+                <input class="form-input" type="url" id="ngo-website" placeholder="https://your-ngo.org"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address *</label>
+              <input class="form-input" type="text" id="ngo-address" placeholder="Full office address" required/>
+              <div class="form-error" id="ngo-address-err"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Focus Areas (comma-separated)</label>
+              <input class="form-input" type="text" id="ngo-focus" placeholder="e.g. Sanitation, Education, Women Empowerment"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description *</label>
+              <textarea class="form-textarea" id="ngo-desc" placeholder="Tell us about your organization, its mission, and past work…" required></textarea>
+              <div class="form-error" id="ngo-desc-err"></div>
+            </div>
+            <button class="form-submit" type="submit" id="ngo-submit-btn">Submit for Review</button>
+          </form>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);cursor:pointer;margin-top:8px" onclick="navigateTo('dashboard-view', document.getElementById('nav-dashboard'))">← Return to Dashboard</p>
+      </div>
+    </div>
+
+    <!-- ALL PROBLEMS VIEW -->
+    <div id="problems-view" class="page-view" style="display:none">
+      <div class="content">
+        <div class="view-header">
+          <h2>All Problems</h2>
+          <p id="problems-view-sub">Browse and filter reported civic issues in your city.</p>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="status-filter" onchange="allProblemsPage=1;loadAllProblems()">
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+          </select>
+          <span id="problems-count" style="font-size:13px;color:var(--text-muted)"></span>
+        </div>
+        <div class="problems-grid" id="all-problems-list">
+          <div class="loading-text">Loading…</div>
+        </div>
+        <div class="pagination">
+          <button class="page-btn" id="prev-btn" onclick="allProblemsPage--;loadAllProblems()" disabled>← Prev</button>
+          <span class="page-info" id="page-info"></span>
+          <button class="page-btn" id="next-btn" onclick="allProblemsPage++;loadAllProblems()" disabled>Next →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Submit Problem -->
+<div class="modal-overlay" id="problem-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('problem-modal')">✕</button>
+    <div class="modal-title">Submit a Problem</div>
+    <div class="modal-sub">Help us understand what needs fixing in your area.</div>
+    <form id="problem-form" onsubmit="handleProblemSubmit(event)" novalidate>
+      <div class="form-group">
+        <label class="form-label">Problem Title *</label>
+        <input class="form-input" type="text" id="prob-title" placeholder="e.g. Garbage dumping near the park" required/>
+        <div class="form-error" id="prob-title-err"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="form-select" id="prob-category" required>
+          <option value="">Select category…</option>
+          <option value="Garbage / Sanitation">🗑️ Garbage / Sanitation</option>
+          <option value="Drainage / Water">💧 Drainage / Water</option>
+          <option value="Road / Pothole">🛣️ Road / Pothole</option>
+          <option value="Street Light">💡 Street Light</option>
+          <option value="Open Defecation">⚠️ Open Defecation</option>
+          <option value="Other">📌 Other</option>
+        </select>
+        <div class="form-error" id="prob-category-err"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea class="form-textarea" id="prob-desc" placeholder="Describe the problem in detail…" required></textarea>
+        <div class="form-error" id="prob-desc-err"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location *</label>
+        <input class="form-input" type="text" id="prob-location" placeholder="Street address or area name" required/>
+        <div class="form-error" id="prob-location-err"></div>
+        <button type="button" class="loc-btn" onclick="useMyLocation()">📍 Use my location</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">City *</label>
+        <input class="form-input" type="text" id="prob-city" placeholder="e.g. Bhopal" required/>
+        <div class="form-error" id="prob-city-err"></div>
+      </div>
+      <input type="hidden" id="prob-lat"/>
+      <input type="hidden" id="prob-lng"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Your Name *</label>
+          <input class="form-input" type="text" id="prob-name" placeholder="Full name" required/>
+          <div class="form-error" id="prob-name-err"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone (optional)</label>
+          <input class="form-input" type="tel" id="prob-phone" placeholder="+91…"/>
+        </div>
+      </div>
+      <button class="form-submit" type="submit" id="prob-submit-btn">Submit Problem</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Map / Problem Detail -->
+<div class="modal-overlay" id="map-modal">
+  <div class="modal" style="width:520px">
+    <button class="modal-close" onclick="closeModal('map-modal')">✕</button>
+    <div class="modal-title" id="map-modal-title">Problem Details</div>
+    <div id="map-modal-map"></div>
+    <div class="problem-info-box" id="problem-info-box"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="pib-btn" style="background:var(--green-light);color:var(--green)" onclick="openVolunteerFromDetail()">🙋 Register as Volunteer</button>
+      <button class="pib-btn" style="background:var(--sand);color:var(--text-muted);border:1px solid var(--border-strong)" onclick="closeModal('map-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Quick Volunteer Register -->
+<div class="modal-overlay" id="volunteer-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('volunteer-modal')">✕</button>
+    <div class="modal-title">Volunteer for this Problem</div>
+    <div class="modal-sub">We'll connect you with the NGO working on this issue.</div>
+    <form id="volunteer-modal-form" onsubmit="handleVolunteerModalSubmit(event)" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input class="form-input" type="text" id="vmod-name" placeholder="Your name" required/>
+          <div class="form-error" id="vmod-name-err"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input class="form-input" type="email" id="vmod-email" placeholder="you@example.com" required/>
+          <div class="form-error" id="vmod-email-err"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone *</label>
+          <input class="form-input" type="tel" id="vmod-phone" placeholder="+91…" required/>
+          <div class="form-error" id="vmod-phone-err"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">City *</label>
+          <input class="form-input" type="text" id="vmod-city" placeholder="City" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Availability *</label>
+        <select class="form-select" id="vmod-avail" required>
+          <option value="">Select…</option>
+          <option value="Weekends">Weekends</option>
+          <option value="Weekdays">Weekdays</option>
+          <option value="Anytime">Anytime</option>
+        </select>
+        <div class="form-error" id="vmod-avail-err"></div>
+      </div>
+      <button class="form-submit" type="submit" id="vmod-submit-btn">Register as Volunteer</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
