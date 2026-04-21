@@ -8,7 +8,6 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .database import connect_db, disconnect_db
-from .seed import seed_complaints
 from .routes import stats, complaints, volunteers, ngos, forum
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -21,7 +20,6 @@ STATIC_DIR = FRONTEND_DIR / "static"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
-    await seed_complaints()
     yield
     await disconnect_db()
 

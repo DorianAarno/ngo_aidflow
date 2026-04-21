@@ -9,7 +9,6 @@ A full-stack web platform connecting citizens, volunteers, and NGOs to track and
 - **NGO Portal** — register your organization, take on complaints as projects
 - **Volunteer Registry** — sign up to help NGOs on active problems
 - **Community Forum** — city-scoped discussion with likes
-- **Data Seeding** — auto-imports `complaints.json` from the Swachhata extractor on first start
 
 ---
 
