@@ -2,12 +2,12 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from .database import connect_db, disconnect_db
+from .database import connect_db, disconnect_db, is_connected
 from .routes import stats, complaints, volunteers, ngos, forum
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -19,7 +19,6 @@ STATIC_DIR = FRONTEND_DIR / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await connect_db()
     yield
     await disconnect_db()
 
@@ -41,6 +40,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def ensure_db(request: Request, call_next):
+    if not is_connected():
+        await connect_db()
+    return await call_next(request)
+
 
 # API routes
 app.include_router(stats.router, prefix="/api")

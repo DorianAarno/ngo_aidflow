@@ -66,3 +66,5 @@ dmypy.json
 
 # MongoDB local data
 mongo_data/
+
+.vercel
