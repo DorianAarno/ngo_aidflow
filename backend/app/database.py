@@ -31,6 +31,10 @@ async def disconnect_db() -> None:
         logger.info("Disconnected from MongoDB")
 
 
+def is_connected() -> bool:
+    return _db is not None
+
+
 def get_db() -> AsyncIOMotorDatabase:
     if _db is None:
         raise RuntimeError("Database not initialized — call connect_db() first")
