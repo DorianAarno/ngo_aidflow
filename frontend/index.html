@@ -113,7 +113,7 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* STAT CARDS */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .stat-card{
   background:#fff;border-radius:var(--radius);border:1px solid var(--border);
   padding:20px;display:flex;align-items:flex-start;gap:14px;
@@ -488,6 +488,16 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
               <div class="stat-label">Completed Projects</div>
               <div class="stat-num blue" id="stat-completed">—</div>
               <div class="stat-sub">resolved community issues</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2"><path d="M6 7h12"/><path d="M8 7v10a2 2 0 002 2h4a2 2 0 002-2V7"/><path d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+            </div>
+            <div>
+              <div class="stat-label">Estimated Waste Cleared</div>
+              <div class="stat-num green">320kg</div>
+              <div class="stat-sub">from resolved projects</div>
             </div>
           </div>
         </div>
