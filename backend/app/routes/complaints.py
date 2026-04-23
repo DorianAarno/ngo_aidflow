@@ -101,7 +101,7 @@ async def create_complaint(body: ComplaintCreate):
     doc["source"] = "user"
     doc["complaint_status_id"] = 1
     doc["complaint_status"] = "Open"
-    doc["complaint_image"] = None
+    doc["complaint_image"] = body.complaint_image
     doc["voted_count"] = 0
     doc["category_name"] = body.category
     doc["title"] = body.title
@@ -111,3 +111,4 @@ async def create_complaint(body: ComplaintCreate):
     result = await db.complaints.insert_one(doc)
     created = await db.complaints.find_one({"_id": result.inserted_id})
     return _serialize(created)
+
