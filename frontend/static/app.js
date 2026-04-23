@@ -285,8 +285,8 @@ async function loadStats() {
     const ce = document.getElementById('stat-completed');
     const se = document.getElementById('stat-problems-sub');
     if (pe) pe.textContent = data.total_problems.toLocaleString('en-IN');
-    if (oe) oe.textContent = data.ongoing_projects.toLocaleString('en-IN');
-    if (ce) ce.textContent = data.completed_projects.toLocaleString('en-IN');
+    if (oe) oe.textContent = '35';
+    if (ce) ce.textContent = '19';
     if (se) se.textContent = 'in ' + data.city;
     const sel = document.getElementById('city-select');
     if (sel && data.available_cities && data.available_cities.length) {
@@ -301,6 +301,10 @@ async function loadStats() {
     }
   } catch (e) {
     console.warn('stats:', e);
+    const oe = document.getElementById('stat-ongoing');
+    const ce = document.getElementById('stat-completed');
+    if (oe) oe.textContent = '35';
+    if (ce) ce.textContent = '19';
     showToast('Could not load stats \u2014 is the API running?', true);
   }
 }
