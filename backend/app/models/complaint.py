@@ -13,3 +13,4 @@ class ComplaintCreate(BaseModel):
     city: str = Field(..., min_length=2)
     submitter_name: str = Field(..., min_length=1)
     submitter_phone: str = ""
+    complaint_image: Optional[str] = None
