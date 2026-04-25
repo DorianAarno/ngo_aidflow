@@ -53,8 +53,6 @@ uvicorn app.main:app --reload --port 8000
 Open **http://localhost:8000** in your browser.  
 API docs: **http://localhost:8000/api/docs**
 
-On first start the server automatically seeds all complaints from `complaints.json` into MongoDB. Subsequent restarts skip the seed step.
-
 ---
 
 ## Docker (recommended for deployment)
@@ -67,8 +65,6 @@ docker compose up --build
 This starts:
 - `api` — FastAPI app on port **8000**
 - `mongo` — MongoDB 7 on port **27017** (data persisted in `mongo_data` volume)
-
-To seed complaints inside Docker, place `complaints.json` in the project root (`swachhata/`) before starting — it is bind-mounted into the container.
 
 **Stop and remove containers:**
 ```bash
@@ -103,7 +99,6 @@ aidflow/
 │   │   ├── main.py          # FastAPI app, lifespan, routes, static serving
 │   │   ├── config.py        # pydantic-settings config
 │   │   ├── database.py      # Motor async MongoDB client + indexes
-│   │   ├── seed.py          # One-time complaints.json → MongoDB import
 │   │   ├── models/          # Pydantic v2 request/response models
 │   │   │   ├── complaint.py
 │   │   │   ├── volunteer.py
