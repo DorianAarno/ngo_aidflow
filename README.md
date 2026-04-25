@@ -147,19 +147,6 @@ All endpoints are prefixed with `/api`. Interactive docs at `/api/docs`.
 
 ---
 
-## Extracting Complaint Data
-
-The `extract_complaints.py` script (in the parent `swachhata/` directory) fetches complaints from the Swachhata government API across 25 Indian cities:
-
-```bash
-cd ..   # swachhata/
-python extract_complaints.py --output complaints.json --max-pages 25
-```
-
-Requires authentication — run `python swachhata.py verify-otp --mobile <number> --otp <otp>` first.
-
----
-
 ## Development Notes
 
 - The frontend is served directly by FastAPI — no separate dev server needed
