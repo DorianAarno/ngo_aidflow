@@ -111,3 +111,4 @@ async def create_complaint(body: ComplaintCreate):
     result = await db.complaints.insert_one(doc)
     created = await db.complaints.find_one({"_id": result.inserted_id})
     return _serialize(created)
+

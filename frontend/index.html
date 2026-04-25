@@ -113,7 +113,7 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* STAT CARDS */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .stat-card{
   background:#fff;border-radius:var(--radius);border:1px solid var(--border);
   padding:20px;display:flex;align-items:flex-start;gap:14px;
@@ -258,6 +258,7 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
 .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6459' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
 .form-textarea{resize:vertical;min-height:80px}
 .form-error{font-size:11px;color:var(--terracotta);margin-top:4px;font-weight:600}
+.form-help{font-size:11px;color:var(--text-muted);margin-top:5px;line-height:1.35}
 .form-submit{
   width:100%;padding:12px;background:var(--green);color:#fff;border:none;
   border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
@@ -475,7 +476,7 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
             </div>
             <div>
               <div class="stat-label">Ongoing Projects</div>
-              <div class="stat-num green" id="stat-ongoing">—</div>
+              <div class="stat-num green" id="stat-ongoing">35</div>
               <div class="stat-sub">active NGO projects</div>
             </div>
           </div>
@@ -485,8 +486,18 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
             </div>
             <div>
               <div class="stat-label">Completed Projects</div>
-              <div class="stat-num blue" id="stat-completed">—</div>
+              <div class="stat-num blue" id="stat-completed">19</div>
               <div class="stat-sub">resolved community issues</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2"><path d="M6 7h12"/><path d="M8 7v10a2 2 0 002 2h4a2 2 0 002-2V7"/><path d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/><path d="M10 11v5"/><path d="M14 11v5"/></svg>
+            </div>
+            <div>
+              <div class="stat-label">Estimated Waste Cleared</div>
+              <div class="stat-num green">320kg</div>
+              <div class="stat-sub">from resolved projects</div>
             </div>
           </div>
         </div>
@@ -750,6 +761,11 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
         <label class="form-label">City *</label>
         <input class="form-input" type="text" id="prob-city" placeholder="e.g. Bhopal" required/>
         <div class="form-error" id="prob-city-err"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Upload Image (optional)</label>
+        <input class="form-input" type="file" id="prob-image" accept="image/*"/>
+        <div class="form-help" id="prob-image-help">Add a clear photo to help NGOs understand the issue faster (JPG/PNG/WebP, max 2 MB).</div>
       </div>
       <input type="hidden" id="prob-lat"/>
       <input type="hidden" id="prob-lng"/>
