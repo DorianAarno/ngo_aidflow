@@ -53,8 +53,6 @@ uvicorn app.main:app --reload --port 8000
 Open **http://localhost:8000** in your browser.  
 API docs: **http://localhost:8000/api/docs**
 
-On first start the server automatically seeds all complaints from `complaints.json` into MongoDB. Subsequent restarts skip the seed step.
-
 ---
 
 ## Docker (recommended for deployment)
@@ -67,8 +65,6 @@ docker compose up --build
 This starts:
 - `api` — FastAPI app on port **8000**
 - `mongo` — MongoDB 7 on port **27017** (data persisted in `mongo_data` volume)
-
-To seed complaints inside Docker, place `complaints.json` in the project root (`swachhata/`) before starting — it is bind-mounted into the container.
 
 **Stop and remove containers:**
 ```bash
@@ -103,7 +99,6 @@ aidflow/
 │   │   ├── main.py          # FastAPI app, lifespan, routes, static serving
 │   │   ├── config.py        # pydantic-settings config
 │   │   ├── database.py      # Motor async MongoDB client + indexes
-│   │   ├── seed.py          # One-time complaints.json → MongoDB import
 │   │   ├── models/          # Pydantic v2 request/response models
 │   │   │   ├── complaint.py
 │   │   │   ├── volunteer.py
@@ -149,19 +144,6 @@ All endpoints are prefixed with `/api`. Interactive docs at `/api/docs`.
 | GET | `/api/forum?city=&page=` | Forum posts |
 | POST | `/api/forum` | Create forum post |
 | POST | `/api/forum/{id}/like` | Like a post |
-
----
-
-## Extracting Complaint Data
-
-The `extract_complaints.py` script (in the parent `swachhata/` directory) fetches complaints from the Swachhata government API across 25 Indian cities:
-
-```bash
-cd ..   # swachhata/
-python extract_complaints.py --output complaints.json --max-pages 25
-```
-
-Requires authentication — run `python swachhata.py verify-otp --mobile <number> --otp <otp>` first.
 
 ---
 
