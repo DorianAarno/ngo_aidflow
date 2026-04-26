@@ -52,7 +52,7 @@ const AVATAR_COLORS = [
 let currentCity = localStorage.getItem('aidflow_city') || 'Bhopal';
 let mapInstance = null;
 let detailMapInst = null;
-let mapMarkersLayer = null;
+let mapMarkers = [];
 let allProblemsPage = 1;
 let currentDetailComplaint = null;
 
@@ -168,7 +168,7 @@ function openModal(id) {
 function closeModal(id) {
   const node = document.getElementById(id);
   if (node) node.classList.remove('open');
-  if (id === 'map-modal' && detailMapInst) { detailMapInst.remove(); detailMapInst = null; }
+  if (id === 'map-modal') { detailMapInst = null; }
 }
 
 // ─── SIDEBAR ──────────────────────────────────────────────────────────────────
@@ -227,7 +227,7 @@ function navigateTo(viewId, navEl) {
   }
   document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
   if (navEl) navEl.classList.add('active');
-  if (viewId === 'dashboard-view' && mapInstance) setTimeout(function () { mapInstance.invalidateSize(); }, 150);
+  if (viewId === 'dashboard-view' && mapInstance) setTimeout(function () { google.maps.event.trigger(mapInstance, 'resize'); }, 150);
   if (viewId === 'problems-view') loadAllProblems();
   if (window.innerWidth < 720) {
     document.getElementById('sidebar').classList.remove('open');
@@ -235,38 +235,51 @@ function navigateTo(viewId, navEl) {
   }
 }
 
-// ─── MAP ──────────────────────────────────────────────────────────────────────
+// ─── MAP ─────────────────────
+
+function makeCircleIcon(color) {
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"><circle cx="9" cy="9" r="7" fill="' + color + '" stroke="#ffffff" stroke-width="2"/></svg>';
+  return {
+    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+    scaledSize: new google.maps.Size(18, 18),
+    anchor: new google.maps.Point(9, 9),
+  };
+}
 
 function initMap() {
   const center = CITY_CENTERS[currentCity] || [23.2599, 77.4126];
-  mapInstance = L.map('map', { zoomControl: true, scrollWheelZoom: false }).setView(center, 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '\u00A9 <a href="https://www.openstreetmap.org/">OpenStreetMap</a>', maxZoom: 18,
-  }).addTo(mapInstance);
-  mapMarkersLayer = L.layerGroup().addTo(mapInstance);
+  mapInstance = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: center[0], lng: center[1] },
+    zoom: 12,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+  });
 }
 
 function renderMapMarkers(markers) {
-  if (!mapMarkersLayer) return;
-  mapMarkersLayer.clearLayers();
+  mapMarkers.forEach(function (m) { m.setMap(null); });
+  mapMarkers = [];
   markers.forEach(function (m) {
     if (!m.lat || !m.lng) return;
     const si = STATUS_MAP[m.status_id] || STATUS_MAP[1];
-    const circle = L.circleMarker([m.lat, m.lng], {
-      radius: 7, fillColor: si.color, color: '#ffffff', weight: 2, fillOpacity: 0.88,
+    const marker = new google.maps.Marker({
+      position: { lat: m.lat, lng: m.lng },
+      map: mapInstance,
+      icon: makeCircleIcon(si.color),
+      title: safeText(m.title) + ' - ' + safeText(m.location),
     });
-    circle.bindTooltip(safeText(m.title) + '\n' + safeText(m.location), { direction: 'top', offset: [0, -6] });
-    (function (data, marker) {
-      marker.on('click', function () {
+    (function (data, mk) {
+      mk.addListener('click', function () {
         apiFetch('/api/complaints/' + data.id).then(openMapModal).catch(function () {
           openMapModal({ id: data.id, title: data.title, location: data.location, latitude: data.lat, longitude: data.lng, complaint_status_id: data.status_id, complaint_status: si.label });
         });
       });
-    })(m, circle);
-    mapMarkersLayer.addLayer(circle);
+    })(m, marker);
+    mapMarkers.push(marker);
   });
   const center = CITY_CENTERS[currentCity];
-  if (center && mapInstance) mapInstance.setView(center, 12, { animate: true });
+  if (center && mapInstance) mapInstance.setCenter({ lat: center[0], lng: center[1] });
 }
 
 async function loadMapMarkers() {
@@ -331,6 +344,10 @@ function buildProblemCard(item) {
   const bottom = el('div', 'prob-bottom');
   bottom.appendChild(el('span', 'prob-tag', safeText(item.category_name) || 'Issue'));
   bottom.appendChild(el('span', 'prob-tag', timeAgo(item.created_at)));
+  if (item.priority) {
+    const pl = item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
+    bottom.appendChild(el('span', 'priority-badge priority-' + item.priority, pl));
+  }
   const viewBtn = el('button', 'prob-map-btn', '\uD83D\uDDFA View');
   (function (id) {
     viewBtn.addEventListener('click', function (e) { e.stopPropagation(); openComplaintById(id); });
@@ -403,6 +420,10 @@ async function loadAllProblems() {
       body.appendChild(el('div', 'apc-loc', '\uD83D\uDCCD ' + (safeText(item.location) || safeText(item.city) || '\u2014')));
       const meta = el('div', 'apc-meta');
       meta.appendChild(el('span', 'apc-status ' + si.cls, si.label));
+      if (item.priority) {
+        var pl = item.priority.charAt(0).toUpperCase() + item.priority.slice(1);
+        meta.appendChild(el('span', 'priority-badge priority-' + item.priority, pl));
+      }
       meta.appendChild(el('span', 'apc-date', formatDate(item.created_at)));
       meta.appendChild(el('span', 'apc-votes', '\uD83D\uDC4D ' + (item.voted_count || 0)));
       if (item.category_name) meta.appendChild(el('span', 'prob-tag', safeText(item.category_name)));
@@ -435,6 +456,11 @@ function openMapModal(complaint) {
     const si = STATUS_MAP[complaint.complaint_status_id] || STATUS_MAP[1];
     infoEl.appendChild(el('div', 'pib-title', safeText(complaint.title)));
 
+    if (complaint.ai_summary) {
+      const sumEl = el('div', 'pib-ai-summary', '✨ ' + safeText(complaint.ai_summary));
+      infoEl.appendChild(sumEl);
+    }
+
     function addRow(key, value) {
       const row = el('div', 'pib-row');
       row.appendChild(el('div', 'pib-key', key));
@@ -446,6 +472,10 @@ function openMapModal(complaint) {
     }
 
     addRow('Category', getCategoryEmoji(complaint.category_name) + ' ' + (safeText(complaint.category_name) || '\u2014'));
+    if (complaint.priority) {
+      const label = complaint.priority.charAt(0).toUpperCase() + complaint.priority.slice(1);
+      addRow('Priority', el('span', 'priority-badge priority-' + complaint.priority, label));
+    }
     addRow('Location', safeText(complaint.location) || '\u2014');
     if (complaint.landmark) addRow('Landmark', safeText(complaint.landmark));
     const badge = el('span', 'prob-status ' + si.cls, si.label);
@@ -469,15 +499,25 @@ function openMapModal(complaint) {
   const lat = complaint.latitude;
   const lng = complaint.longitude;
   setTimeout(function () {
-    if (detailMapInst) { detailMapInst.remove(); detailMapInst = null; }
+    detailMapInst = null;
     const mapEl = document.getElementById('map-modal-map');
     if (!mapEl) return;
+    mapEl.style.cssText = '';
     if (lat && lng) {
-      detailMapInst = L.map('map-modal-map', { zoomControl: true }).setView([lat, lng], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '\u00A9 OSM' }).addTo(detailMapInst);
+      detailMapInst = new google.maps.Map(mapEl, {
+        center: { lat: lat, lng: lng },
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
       const si2 = STATUS_MAP[complaint.complaint_status_id] || STATUS_MAP[1];
-      L.circleMarker([lat, lng], { radius: 10, fillColor: si2.color, color: '#ffffff', weight: 3, fillOpacity: 0.95 })
-        .addTo(detailMapInst).bindPopup(safeText(complaint.title) || 'Problem').openPopup();
+      new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: detailMapInst,
+        icon: makeCircleIcon(si2.color),
+        title: safeText(complaint.title) || 'Problem',
+      });
     } else {
       mapEl.textContent = 'No location data available';
       mapEl.style.cssText = 'display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-muted)';
@@ -828,7 +868,18 @@ document.addEventListener('keydown', function (e) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', function () {
+function loadGoogleMaps(apiKey) {
+  return new Promise(function (resolve, reject) {
+    window.__gmapsCb = resolve;
+    var s = document.createElement('script');
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(apiKey) + '&callback=__gmapsCb';
+    s.async = true;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
   // Modal overlay click-to-close
   document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
     overlay.addEventListener('click', function (e) {
@@ -856,8 +907,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // Bootstrap
   currentCity = localStorage.getItem('aidflow_city') || 'Bhopal';
   updateTopbarDate();
-  initMap();
   prefillCityFields(currentCity);
+
+  try {
+    const cfg = await apiFetch('/api/config');
+    await loadGoogleMaps(cfg.google_maps_api_key || '');
+  } catch (e) {
+    console.warn('Google Maps failed to load:', e);
+  }
+  initMap();
 
   const mt = document.getElementById('map-card-title');
   if (mt) mt.textContent = '\uD83D\uDCCD Active Locations \u2014 ' + currentCity;

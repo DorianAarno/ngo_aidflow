@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from ..database import get_db
 from ..models.complaint import ComplaintCreate
+from ..services.gemini import analyze_complaint
 
 router = APIRouter(tags=["complaints"])
 
@@ -28,13 +29,11 @@ async def list_complaints(
     db = get_db()
     query: dict = {"city": city}
     if status != "all":
-        # Map status string to complaint_status_id
         status_map = {"pending": 1, "ongoing": 2, "completed": 3}
         status_id = status_map.get(status.lower())
         if status_id:
             query["complaint_status_id"] = status_id
         else:
-            # Try matching by complaint_status string
             query["complaint_status"] = {"$regex": status, "$options": "i"}
 
     total = await db.complaints.count_documents(query)
@@ -61,23 +60,23 @@ async def map_complaints(city: str = Query(default="Bhopal")):
         "complaint_status_id": 1,
         "title": 1,
         "location": 1,
+        "priority": 1,
     }
     cursor = db.complaints.find(query, projection).limit(2000)
     docs = await cursor.to_list(length=2000)
 
-    result = []
-    for d in docs:
-        result.append(
-            {
-                "id": str(d["_id"]),
-                "lat": d.get("latitude"),
-                "lng": d.get("longitude"),
-                "status_id": d.get("complaint_status_id", 1),
-                "title": d.get("title", ""),
-                "location": d.get("location", ""),
-            }
-        )
-    return result
+    return [
+        {
+            "id": str(d["_id"]),
+            "lat": d.get("latitude"),
+            "lng": d.get("longitude"),
+            "status_id": d.get("complaint_status_id", 1),
+            "title": d.get("title", ""),
+            "location": d.get("location", ""),
+            "priority": d.get("priority"),
+        }
+        for d in docs
+    ]
 
 
 @router.get("/complaints/{complaint_id}")
@@ -91,6 +90,24 @@ async def get_complaint(complaint_id: str):
     doc = await db.complaints.find_one({"_id": oid})
     if not doc:
         raise HTTPException(status_code=404, detail=f"Complaint {complaint_id} not found")
+
+    # Lazily enrich seeded/old complaints that lack AI fields
+    if not doc.get("priority") or not doc.get("ai_summary"):
+        ai = await analyze_complaint(
+            title=doc.get("title", ""),
+            description=doc.get("description", ""),
+            category=doc.get("category", doc.get("category_name", "")),
+            location=doc.get("location", ""),
+        )
+        update: dict = {}
+        if not doc.get("priority"):
+            update["priority"] = ai["priority"]
+        if not doc.get("ai_summary"):
+            update["ai_summary"] = ai["ai_summary"]
+        if update:
+            await db.complaints.update_one({"_id": oid}, {"$set": update})
+            doc.update(update)
+
     return _serialize(doc)
 
 
@@ -108,7 +125,15 @@ async def create_complaint(body: ComplaintCreate):
     doc["full_name"] = body.submitter_name
     doc["created_at"] = datetime.now(timezone.utc)
 
+    ai = await analyze_complaint(
+        title=body.title,
+        description=body.description,
+        category=body.category,
+        location=body.location,
+    )
+    doc["priority"] = ai["priority"]
+    doc["ai_summary"] = ai["ai_summary"]
+
     result = await db.complaints.insert_one(doc)
     created = await db.complaints.find_one({"_id": result.inserted_id})
     return _serialize(created)
-

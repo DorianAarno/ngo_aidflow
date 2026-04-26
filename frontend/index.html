@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AidFlow — Community Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root {
   --sand: #FDF6ED;
@@ -159,6 +157,12 @@ body{font-family:'Nunito',sans-serif;background:var(--sand);color:var(--text);di
 .status-pending{background:var(--amber-light);color:var(--amber-dark)}
 .status-ongoing{background:var(--green-light);color:var(--green)}
 .status-completed{background:var(--blue-light);color:var(--blue)}
+.priority-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.priority-critical{background:#FEE2E2;color:#DC2626}
+.priority-high{background:#FFEDD5;color:#C2410C}
+.priority-medium{background:var(--amber-light);color:var(--amber-dark)}
+.priority-low{background:var(--green-light);color:var(--green)}
+.pib-ai-summary{font-size:11px;color:var(--text-muted);font-style:italic;margin-bottom:8px;line-height:1.4;padding:7px 10px;background:rgba(242,167,38,0.08);border-radius:7px;border-left:2px solid var(--amber)}
 .prob-bottom{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .prob-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;
   background:var(--sand);color:var(--text-muted);border:1px solid var(--border)}

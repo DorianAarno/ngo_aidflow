@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from .config import settings
 from .database import connect_db, disconnect_db, is_connected
 from .routes import stats, complaints, volunteers, ngos, forum
 
@@ -59,6 +60,11 @@ app.include_router(forum.router, prefix="/api")
 # Static files
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+@app.get("/api/config", include_in_schema=False)
+async def get_config():
+    return {"google_maps_api_key": settings.google_maps_api_key}
 
 
 @app.get("/", include_in_schema=False)

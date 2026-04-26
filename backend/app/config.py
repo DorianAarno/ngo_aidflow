@@ -5,9 +5,9 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     mongodb_url: str = "mongodb://localhost:27017"
     db_name: str = "aidflow"
-    # Default: three levels up from app/ → swachhata/complaints.json (local dev)
-    # Override with COMPLAINTS_JSON env var (e.g. /data/complaints.json in Docker)
-    
+    gemini_api_key: str = ""
+    google_maps_api_key: str = ""
+
     model_config = {"env_file": Path(__file__).resolve().parents[1] / ".env"}
 
 
