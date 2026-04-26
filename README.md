@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌿 AidFlow
+#  AidFlow
 
 ### AI-Powered Community Aid Platform for Civic Sanitation Complaints
 
@@ -19,13 +19,13 @@
 
 ---
 
-## 🏆 Hackathon Context
+## Hackathon Context
 
 > **AidFlow** was built to solve one of India's most persistent civic challenges: sanitation and public-health complaints that are filed, forgotten, and never resolved. By combining real government complaint data (Swachhata API), AI-powered triage, and a coordination layer for NGOs and volunteers, AidFlow turns raw civic frustration into measurable community impact.
 
 ---
 
-## 🔍 The Problem
+##  The Problem
 
 Every day, millions of sanitation complaints are logged across Indian cities — overflowing sewers, broken water supply, garbage accumulation, collapsed roads. Yet:
 
@@ -38,32 +38,32 @@ AidFlow addresses all four gaps in a single, deployable web application.
 
 ---
 
-## ✨ Features
+##  Features
 
 | Feature | Description |
 |---------|-------------|
-| 🗺️ **Interactive Dashboard** | City-scoped statistics, a live Google Maps heatmap of complaints, and a recent complaint feed — all in one view |
-| 🤖 **AI Triage (Gemini 2.0 Flash)** | Every complaint is automatically classified as `critical / high / medium / low` and summarized in one sentence using Google Gemini |
-| 📋 **Complaint Management** | Browse, filter, and paginate all civic complaints; submit new ones with GPS coordinates and photo evidence |
-| 🏢 **NGO Portal** | Organizations register, get approved, and formally adopt complaints as active projects with trackable status |
-| 🙋 **Volunteer Registry** | Citizens sign up as volunteers; NGOs can find and mobilize help for active projects |
-| 💬 **Community Forum** | City-scoped discussion board with likes so residents can surface urgent issues and share updates |
-| 🔄 **Lazy AI Enrichment** | Existing complaints are backfilled with AI priority and summary on first view — no batch job required |
-| 🌐 **Graceful Degradation** | The platform runs without AI keys (defaults to `medium` priority) and without a Maps key (map simply doesn't load) |
+|  **Interactive Dashboard** | City-scoped statistics, a live Google Maps heatmap of complaints, and a recent complaint feed — all in one view |
+|  **AI Triage (Gemini 2.0 Flash)** | Every complaint is automatically classified as `critical / high / medium / low` and summarized in one sentence using Google Gemini |
+|  **Complaint Management** | Browse, filter, and paginate all civic complaints; submit new ones with GPS coordinates and photo evidence |
+|  **NGO Portal** | Organizations register, get approved, and formally adopt complaints as active projects with trackable status |
+|  **Volunteer Registry** | Citizens sign up as volunteers; NGOs can find and mobilize help for active projects |
+|  **Community Forum** | City-scoped discussion board with likes so residents can surface urgent issues and share updates |
+|  **Lazy AI Enrichment** | Existing complaints are backfilled with AI priority and summary on first view — no batch job required |
+|  **Graceful Degradation** | The platform runs without AI keys (defaults to `medium` priority) and without a Maps key (map simply doesn't load) |
 
 ---
 
-## 🎥 Live Demo
+##  Demo
 
-> **URL:** _[Add your deployed URL here]_  
+> **URL:** _[https://aidflow-black.vercel.app/]_  
 > **Test credentials:** No login required — the platform is fully open for the hackathon demo.
 
-Sample cities available out of the box after seeding from the Swachhata API:
-`Mumbai · Delhi · Bengaluru · Chennai · Hyderabad · Kolkata · Pune`
+25+ Sample cities available out of the box after seeding from the Swachhata API:
+`Mumbai · Delhi · Bengaluru · Chennai · Hyderabad · Kolkata · Pune+ more`
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -103,7 +103,7 @@ Citizen fills form → POST /api/complaints
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -118,7 +118,9 @@ Citizen fills form → POST /api/complaints
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
+<details>
+  <summary>Click to expand setup instructions</summary>
 
 ### Prerequisites
 
@@ -174,10 +176,13 @@ uvicorn app.main:app --reload --port 8000
 | http://localhost:8000 | Application UI |
 | http://localhost:8000/api/docs | Interactive Swagger docs |
 | http://localhost:8000/api/redoc | ReDoc documentation |
+</details>
 
 ---
 
-## 🐳 Docker (recommended)
+##  Docker (recommended)
+<details>
+  <summary>click to expand Docker setup instructions</summary>
 
 The easiest way to run the full stack — no local MongoDB needed.
 
@@ -200,9 +205,13 @@ docker compose down -v
 
 > **Note:** The Compose file expects a `complaints.json` seed file at `../complaints.json` (produced by the Swachhata extractor script). Remove that volume mount from `docker-compose.yml` if you don't have the file.
 
+</details>
+
 ---
 
-## ☁️ Vercel Deployment
+##  Vercel Deployment
+<details>
+  <summary>click to expand Vercel setup instructions</summary>
 
 The project ships with `vercel.json` and `api/index.py` pre-configured for Vercel's Python serverless runtime.
 
@@ -228,9 +237,11 @@ Then promote to production:
 vercel --prod
 ```
 
+</details>
+
 ---
 
-## 🔑 Environment Variables
+##  Environment Variables
 
 Create `backend/.env` (copy from `.env.example`):
 
@@ -238,8 +249,8 @@ Create `backend/.env` (copy from `.env.example`):
 |----------|---------|----------|-------------|
 | `MONGODB_URL` | `mongodb://localhost:27017` | ✅ | MongoDB connection string |
 | `DB_NAME` | `aidflow` | ✅ | Database name |
-| `GEMINI_API_KEY` | _(empty)_ | ⭐ recommended | Google Gemini API key — AI triage is silently skipped if unset; all complaints default to `medium` priority |
-| `GOOGLE_MAPS_API_KEY` | _(empty)_ | ⭐ recommended | Google Maps JavaScript API key — the interactive map won't load without this |
+| `GEMINI_API_KEY` | _(empty)_ |  recommended | Google Gemini API key — AI triage is silently skipped if unset; all complaints default to `medium` priority |
+| `GOOGLE_MAPS_API_KEY` | _(empty)_ |  recommended | Google Maps JavaScript API key — the interactive map won't load without this |
 
 Get your free keys:
 - **Gemini:** https://aistudio.google.com/app/apikey
@@ -247,7 +258,7 @@ Get your free keys:
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 ngo_aidflow/
@@ -286,7 +297,7 @@ ngo_aidflow/
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 All endpoints are prefixed with `/api`. Full interactive documentation is available at `/api/docs` (Swagger UI) and `/api/redoc`.
 
@@ -337,7 +348,7 @@ All endpoints are prefixed with `/api`. Full interactive documentation is availa
 
 ---
 
-## 🧠 AI Triage — How It Works
+##  AI Triage — How It Works
 
 AidFlow uses **Google Gemini 2.0 Flash** to classify every complaint:
 
@@ -365,13 +376,13 @@ Output: {
 
 ---
 
-## 🗺️ Data Source — Swachhata API
+##  Data Source — Swachhata API
 
 Complaint data is seeded from the **Swachhata Platform** — India's official government portal for sanitation and civic issue reporting. The extractor script produces a `complaints.json` file that the Docker Compose setup mounts into the API container for import on first startup.
 
 ---
 
-## 💡 Development Notes
+##  Development Notes
 
 - The frontend is served directly by FastAPI — no Node.js dev server or build step is required.
 - Google Maps API is loaded dynamically via `/api/config`, so the key is never exposed in source code.
@@ -381,21 +392,7 @@ Complaint data is seeded from the **Swachhata Platform** — India's official go
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m "feat: add my feature"`
-4. Push to your fork: `git push origin feature/my-feature`
-5. Open a Pull Request
-
-Please keep PRs focused — one feature or fix per PR.
-
----
-
-## 📄 License
+##  License
 
 This project is open-source and available under the [MIT License](LICENSE).
 
@@ -403,6 +400,5 @@ This project is open-source and available under the [MIT License](LICENSE).
 
 <div align="center">
 
-Built with ❤️ for the community · Powered by FastAPI, MongoDB & Google Gemini
-
+©AarnoDorian(Arnav Mittal), ritikaslaptop(Ritika Chaturvedi) & Rbnry25(Robin Roy) for Google Solution Challenge-2026
 </div>
